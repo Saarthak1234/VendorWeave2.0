@@ -3,6 +3,9 @@ import { ChartAreaInteractive } from "../../components/chart-area-interactive"
 import { DataTable } from "../../components/data-table"
 import { SectionCards } from "../../components/section-cards"
 import { SiteHeader } from "../../components/site-header"
+import { TopFirms } from "../../components/top-firms"
+import { TopVendors } from "../../components/top-vendors"
+
 import {
   SidebarInset,
   SidebarProvider,
@@ -21,19 +24,35 @@ export default function Page() {
       }
     >
       <AppSidebar variant="inset" />
+
       <SidebarInset>
         <SiteHeader />
-        <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <SectionCards />
-              <div className="px-4 lg:px-6">
-                <ChartAreaInteractive />
-              </div>
+
+        {/* MAIN DASHBOARD CONTENT */}
+        <main className="flex flex-1 justify-center">
+          <div className="w-full max-w-350 px-4 py-6 space-y-8 lg:px-6">
+
+            {/* KPI CARDS */}
+            <SectionCards />
+
+            {/* CHART */}
+            <div className="rounded-xl border bg-background p-4 lg:p-6">
+              <ChartAreaInteractive />
+            </div>
+
+            {/* TOP LISTS */}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <TopFirms />
+              <TopVendors />
+            </div>
+
+            {/* TABLE */}
+            <div className="rounded-xl border bg-background p-4 lg:p-6">
               <DataTable data={data} />
             </div>
+
           </div>
-        </div>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   )
