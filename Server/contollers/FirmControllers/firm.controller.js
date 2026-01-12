@@ -1,4 +1,7 @@
 import Firm from "../../models/firmModel/firmModel";
+import dotenv from 'dotenv'
+
+dotenv.config();
 
 //Controllers to make: createFirm, getUsersFirm, getfirmByID, updateFirm, deleteFirm
 
