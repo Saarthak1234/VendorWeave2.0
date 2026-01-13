@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 
 dotenv.config();
 
-//Controllers to make: createFirm(done), getUsersFirm(done), getfirmByID(done), updateFirm(), deleteFirm()
+//Controllers to make: createFirm(done), getUsersFirm(done), getfirmByID(done), updateFirm(done), deleteFirm()
 
 
 const createFirm = async(req,res)=>{
@@ -78,6 +78,17 @@ const updateFirm = async (req,res) => {
         const{admin_Id,updatedName} = req.body
         const recievedFirmId = req.params;
         const firmData = await Firm.findOne({_id:recievedFirmId.firmId, adminId:admin_Id})
+
+        if(!firmData){
+            console.log("No firm with same details found")
+            return res.status(400).json({message:"Error in finding firm"})
+        }
+
+        if(firmData.firmName == updatedName){
+            console.log("Firm has the same name")
+            return res.status(400).json({message:"Firm has the same name: Please enter a different name to update the name"})
+        }
+
         console.log(firmData.firmName)
 
         firmData.firmName = updatedName
@@ -85,7 +96,7 @@ const updateFirm = async (req,res) => {
         const updatedFirm = await firmData.save()
 
         console.log("Firm updated", updatedFirm)
-        return res.status(400).json({message:"Successfully updated firm details"})
+        return res.status(200).json({message:"Successfully updated firm details"})
         
     } catch (error) {
         console.log("Error while updating firm",error)
@@ -93,4 +104,25 @@ const updateFirm = async (req,res) => {
     }
 }
 
-export {createFirm, getUserFirms, getFirmById, updateFirm}
+const deleteFirm = async function(req,res){
+    try {
+        const {admin_Id} = req.body
+        const recievedFirmId = req.params
+        console.log(recievedFirmId)
+        const firmData = await Firm.findOne({_id:recievedFirmId.firmId, adminId:admin_Id})
+
+        console.log(firmData)
+
+        const deleteFirm = await Firm.deleteOne({_id:recievedFirmId.firmId, adminId:admin_Id})
+
+        console.log("Firm deleted",deleteFirm)
+
+        return res.status(200).json({message: "Successfully deleted firm"})
+
+    } catch (error) {
+        console.log("Error while deleting firm", error)
+        return res.status(500).json({message:"Internal server error : Error while deling firm"})
+    }
+}
+
+export {createFirm, getUserFirms, getFirmById, updateFirm, deleteFirm}
