@@ -1,5 +1,5 @@
 import express from "express";
-import { createFirm, getUserFirms, getFirmById } from "../../contollers/FirmControllers/firm.Controller.js";
+import { createFirm, getUserFirms, getFirmById, updateFirm } from "../../contollers/FirmControllers/firm.Controller.js";
 // import auth from "../middlewares/auth.js";
 
 const FirmRouter = express.Router();
@@ -14,7 +14,7 @@ const FirmRouter = express.Router();
 FirmRouter.post("/create-firm", createFirm);
 FirmRouter.get("/get-firms", getUserFirms);
 FirmRouter.get("/:firmId", getFirmById);
-// FirmRouter.patch("/:firmId", firmController.updateFirm);
+FirmRouter.patch("/:firmId", updateFirm);
 // FirmRouter.delete("/:firmId", firmController.deleteFirm);
 
 export default FirmRouter;

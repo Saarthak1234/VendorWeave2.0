@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 
 dotenv.config();
 
-//Controllers to make: createFirm(done), getUsersFirm(), getfirmByID, updateFirm, deleteFirm
+//Controllers to make: createFirm(done), getUsersFirm(done), getfirmByID(done), updateFirm(), deleteFirm()
 
 
 const createFirm = async(req,res)=>{
@@ -73,4 +73,24 @@ const getFirmById = async (req,res) => {
     }
 }
 
-export {createFirm, getUserFirms, getFirmById}
+const updateFirm = async (req,res) => {
+    try {
+        const{admin_Id,updatedName} = req.body
+        const recievedFirmId = req.params;
+        const firmData = await Firm.findOne({_id:recievedFirmId.firmId, adminId:admin_Id})
+        console.log(firmData.firmName)
+
+        firmData.firmName = updatedName
+
+        const updatedFirm = await firmData.save()
+
+        console.log("Firm updated", updatedFirm)
+        return res.status(400).json({message:"Successfully updated firm details"})
+        
+    } catch (error) {
+        console.log("Error while updating firm",error)
+        return res.status(500).json({message:"Internal Server Error : Error while updating firm"})
+    }
+}
+
+export {createFirm, getUserFirms, getFirmById, updateFirm}
