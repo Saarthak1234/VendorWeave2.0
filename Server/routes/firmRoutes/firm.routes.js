@@ -1,8 +1,8 @@
 import express from "express";
-import { createFirm } from "../../contollers/FirmControllers/firm.Controller.js";
+import { createFirm, getUserFirms, getFirmById } from "../../contollers/FirmControllers/firm.Controller.js";
 // import auth from "../middlewares/auth.js";
 
-const router = express.Router();
+const FirmRouter = express.Router();
 
 // router.post("/", auth, firmController.createFirm);
 // router.get("/", auth, firmController.getUserFirms);
@@ -11,10 +11,10 @@ const router = express.Router();
 // router.delete("/:firmId", auth, firmController.deleteFirm);
 
 //Using without auth for testing purpose
-router.post("/create", createFirm);
-// router.get("/", firmController.getUserFirms);
-// router.get("/:firmId", firmController.getFirmById);
-// router.patch("/:firmId", firmController.updateFirm);
-// router.delete("/:firmId", firmController.deleteFirm);
+FirmRouter.post("/create-firm", createFirm);
+FirmRouter.get("/get-firms", getUserFirms);
+FirmRouter.get("/:firmId", getFirmById);
+// FirmRouter.patch("/:firmId", firmController.updateFirm);
+// FirmRouter.delete("/:firmId", firmController.deleteFirm);
 
-export default router;
+export default FirmRouter;
