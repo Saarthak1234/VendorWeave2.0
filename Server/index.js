@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv'
 import connectDB from './utils/db.connect.js';
 import FirmRouter from './routes/firmRoutes/firm.Routes.js';
+import vendorRouter from './routes/vendorRoutes/vendor.routes.js';
 
 dotenv.config();
 connectDB();
@@ -15,7 +16,7 @@ app.get('/',(req,res)=>{
     res.send("Hello world");
 })
 
-app.use('/firm',FirmRouter);
+app.use('/firm', FirmRouter);
 
 app.listen(PORT,()=>{
     console.log(`App listening on port ${PORT}`)

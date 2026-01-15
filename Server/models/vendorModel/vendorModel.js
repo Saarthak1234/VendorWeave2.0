@@ -1,24 +1,24 @@
-```
-Vendor schema
+// ```
+// Vendor schema
 
-Vendor {
-  _id
-  firmId   // reference to Firm
-  name
-  healthScore
-  points
-  computedFields...
-  createdAt
-  updatedAt
-}
+// Vendor {
+//   _id
+//   firmId   // reference to Firm
+//   name
+//   healthScore
+//   points
+//   computedFields...
+//   createdAt
+//   updatedAt
+// }
 
-```
+// ```
 
 import mongoose, { Schema } from "mongoose"
 
 const vendorSchema = new mongoose.Schema({
     firmId: {
-        type: Schema.type.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: "Firm",
         required: true
     },
@@ -34,14 +34,14 @@ const vendorSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    computeFields: {
-        totalQueries: { type: Number, default: 0 },
-        positiveQueries: { type: Number, default: 0 },
-        negativeQueries: { type: Number, default: 0 },
-        healthScore: { type: Number, default: 0 },
-        points: { type: Number, default: 0 },
-        lastQueryAt: { type: Date }
-    },
+    // computeFields: {
+    //     totalQueries: { type: Number, default: 0 },
+    //     positiveQueries: { type: Number, default: 0 },
+    //     negativeQueries: { type: Number, default: 0 },
+    //     healthScore: { type: Number, default: 0 },
+    //     points: { type: Number, default: 0 },
+    //     lastQueryAt: { type: Date }
+    // },
     createdAt:{
         type:Date,
         default:Date.now
