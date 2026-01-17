@@ -104,4 +104,31 @@ const updateVendor = async (req, res) => {
 
 }
 
-export {createVendor, updateVendor}
+const deleteVendor = async function(req,res){
+    try {
+        const {name, vendor_id} = req.body
+        const FirmId = req.params
+
+        console.log(name,vendor_id,FirmId.firmId)
+
+        const checkVendorExists = await Vendor.findOne({vendorName : name , firmId : FirmId.firmId , _id : vendor_id})
+
+        if(!checkVendorExists){
+            console.log("Vendor not found")
+            return res.status(400).json({message : "Vendor not found"})
+        }
+
+        const deleteVendor = await checkVendorExists.deleteOne();
+
+        console.log(deleteVendor)
+
+        console.log("Vendor successfully deleted")
+        return res.status(200).json({message : "Vendor successfully deleted"})
+
+    } catch (error) {
+        console.log("Error in deleting vendor");
+        return res.status(500).json({message:"Internal Server error : Error while deleting firm"})
+    }
+}
+
+export {createVendor, updateVendor, deleteVendor}
