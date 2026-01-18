@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 
 dotenv.config();
 
-//Vendor routes to create: createVendor, updateVendor, deleteVendor, getVendorByFirmId, getVendorsByFir mId
+//Vendor routes to create: createVendor(done), updateVendor(done), deleteVendor(done), getVendorByFirmId, getVendorsByFirmId
 
 const createVendor = async (req, res) => {
     try {
@@ -131,4 +131,35 @@ const deleteVendor = async function(req,res){
     }
 }
 
-export {createVendor, updateVendor, deleteVendor}
+const getVendorByFirmId = async(req,res) => {
+    try {
+        const {name} = req.body
+        const firmId = req.params.firmId
+
+        console.log(name, firmId)
+
+        const checkVendorExists = await Vendor.findOne({vendorName: name, firmId: firmId})
+
+        if(!checkVendorExists){
+            console.log("Vendor with these details for this firm does not exist")
+            return res.status(400).json({message: "Vendor not found"})
+        }
+
+        const vendorObj = {
+            name : checkVendorExists.vendorName,
+            healthScore : checkVendorExists. healthScore,
+            points: checkVendorExists.points
+        }
+
+        console.log(vendorObj);
+        return res.status(200).json({
+            message:"Vendor found and returned",vendorObj})
+        
+
+    } catch (error) {
+        console.log("Error in get Vendor By ID")
+        return res.status(500).json({message:"Internal Server Error : Error while fetching details of this vendor for this firm"})
+    }
+}
+
+export {createVendor, updateVendor, deleteVendor, getVendorByFirmId}
