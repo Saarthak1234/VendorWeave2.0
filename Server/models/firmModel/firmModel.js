@@ -7,9 +7,10 @@ const FirmSchema = new mongoose.Schema({
         trim:true,
     },
     adminId:{
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref:"User",
         required: true,
-        select: false, //Hides field from query results
+        // select: false, //Hides field from query results
     },
     createdAt:{
         type: Date,

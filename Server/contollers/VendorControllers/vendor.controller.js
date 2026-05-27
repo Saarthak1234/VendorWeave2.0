@@ -1,5 +1,6 @@
 import Firm from "../../models/firmModel/firmModel.js";
 import Vendor from "../../models/vendorModel/vendorModel.js";
+import Query from "../../models/queryModel/queryModel.js";
 import dotenv from 'dotenv'
 
 dotenv.config();
@@ -8,15 +9,13 @@ dotenv.config();
 
 const createVendor = async (req, res) => {
     try {
-        const { name, healthScore, points } = req.body;
+        const { name, healthScore = 100, points = 0 } = req.body;
         const parentFirmId = req.params.firmId
 
-        //Optional : Check if this firm exists or not?
-
-        const checkFirmExists = await Firm.findById(parentFirmId);
+        const checkFirmExists = await Firm.findOne({ _id: parentFirmId, adminId: req.user.id });
         if (!checkFirmExists) {
-            console.log("Please provide a valid firm")
-            return res.status(400).json({ message: "Error creating vendor: Invalid firm" });
+            console.log("Please provide a valid firm owned by you")
+            return res.status(400).json({ message: "Error creating vendor: Invalid firm or unauthorized" });
         }
 
         //Add validations for creating vendor
@@ -62,15 +61,19 @@ const createVendor = async (req, res) => {
 
 const updateVendor = async (req, res) => {
     try {
-        const { name, updatedName, updatedHealthScore, updatedPoints } = req.body;
+        const { vendorId, updatedName, updatedHealthScore, updatedPoints } = req.body;
         const parentFirmId = req.params.firmId
-        const checkVendorExists = await Vendor.findOne({ vendorName: name, firmId: parentFirmId })
+        const checkFirmExists = await Firm.findOne({ _id: parentFirmId, adminId: req.user.id });
+        if (!checkFirmExists) {
+            return res.status(401).json({ message: "Unauthorized to manage vendors for this firm" });
+        }
+        const checkVendorExists = await Vendor.findOne({ _id: vendorId, firmId: parentFirmId })
         if (!checkVendorExists) {
             console.log("Vendor does not exist in this firm");
             return res.status(400).json({ message: "Error updating vendor : Vendor does not exist" });
         }
 
-        if (checkVendorExists.vendorName == updatedName) {
+        if (updatedName && checkVendorExists.vendorName == updatedName) {
             console.log("Cannot enter the same name for the vendor")
             return res.status(400).json({ message: "Error updating vendor : Cannot enter the same name" })
         }
@@ -113,12 +116,15 @@ const updateVendor = async (req, res) => {
 
 const deleteVendor = async function (req, res) {
     try {
-        const { name, vendor_id } = req.body
+        const { vendorId } = req.body
         const FirmId = req.params
 
-        console.log(name, vendor_id, FirmId.firmId)
+        const checkFirmExists = await Firm.findOne({ _id: FirmId.firmId, adminId: req.user.id });
+        if (!checkFirmExists) {
+            return res.status(401).json({ message: "Unauthorized to manage vendors for this firm" });
+        }
 
-        const checkVendorExists = await Vendor.findOne({ vendorName: name, firmId: FirmId.firmId, _id: vendor_id })
+        const checkVendorExists = await Vendor.findOne({ firmId: FirmId.firmId, _id: vendorId })
 
         if (!checkVendorExists) {
             console.log("Vendor not found")
@@ -126,6 +132,9 @@ const deleteVendor = async function (req, res) {
         }
 
         const deleteVendor = await checkVendorExists.deleteOne();
+
+        // Cascading Delete: Clean up all queries for this vendor
+        await Query.deleteMany({ vendorId: vendorId });
 
         console.log(deleteVendor)
 
@@ -140,10 +149,16 @@ const deleteVendor = async function (req, res) {
 
 const getVendorByFirmId = async (req, res) => {
     try {
-        const { name } = req.body
+        // GET requests should use req.query instead of req.body
+        const { vendorId } = req.query; 
         const firmId = req.params.firmId
 
-        const checkVendorExists = await Vendor.findOne({ vendorName: name, firmId: firmId })
+        const checkFirmExists = await Firm.findOne({ _id: firmId, adminId: req.user.id });
+        if (!checkFirmExists) {
+            return res.status(401).json({ message: "Unauthorized to view vendors for this firm" });
+        }
+
+        const checkVendorExists = await Vendor.findOne({ _id: vendorId, firmId: firmId })
 
         if (!checkVendorExists) {
             console.log("Vendor with these details for this firm does not exist")
@@ -172,19 +187,13 @@ const getVendorsByFirmId = async (req, res) => {
     try {
         const recievedFirmId = req.params
 
-        // Add a check if that firm exists or not
+        const checkFirmExists = await Firm.findOne({ _id: recievedFirmId.firmId, adminId: req.user.id });
+        if(!checkFirmExists){
+            console.log("Please enter a valid firm owned by you")
+            return res.status(400).json({message : "Invalid firm or unauthorized"})
+        }
 
-        // const checkFirmExists = await Firm.findById(recievedFirmId.firmId)
-        // console.log(recievedFirmId, recievedFirmId.firmId)
-
-        // console.log(checkFirmExists)
-
-        // if(!checkFirmExists){
-        //     console.log("Please enter a valid firm")
-        //     return res.status(400).json({message : "Invalid firm"})
-        // }
-
-        const getAllVendors = await Vendor.find(recievedFirmId)
+        const getAllVendors = await Vendor.find({ firmId: recievedFirmId.firmId })
         console.log(getAllVendors)
 
         if(getAllVendors === null || getAllVendors.length === 0){
@@ -194,7 +203,7 @@ const getVendorsByFirmId = async (req, res) => {
 
         console.log("Vendors returned successfully")
 
-        return res.status(200).json({ message: "Vendors successfully found and returned" })
+        return res.status(200).json({ message: "Vendors successfully found and returned", vendors: getAllVendors })
 
     } catch (error) {
         console.log("Error in getting all the vendors of a particular firm",error)

@@ -1,7 +1,7 @@
 import express from 'express';
-import FirmRouter from '../firmRoutes/firm.Routes.js';
+import FirmRouter from '../firmRoutes/firm.routes.js';
 import { createVendor, updateVendor, deleteVendor, getVendorByFirmId, getVendorsByFirmId } from '../../contollers/VendorControllers/vendor.controller.js';
-
+import queryRouter from '../queryRoutes/query.routes.js';
 
 const vendorRouter = express.Router({mergeParams:true}); //Merges the incoming firmRoute params with the vendor params or route.
 
@@ -10,5 +10,7 @@ vendorRouter.patch('/update-vendor', updateVendor);
 vendorRouter.delete('/delete-vendor', deleteVendor);
 vendorRouter.get('/get-vendor', getVendorByFirmId);
 vendorRouter.get('/get-all-vendors', getVendorsByFirmId);
+
+vendorRouter.use('/:vendorId/query', queryRouter);
 
 export default vendorRouter;
