@@ -57,7 +57,7 @@ export default function FirmDetailsPage() {
   // Validate firm ID
   if (!firmId) {
     return (
-      <div className="max-w-300 mx-auto px-4 py-6">
+      <div>
         <Card className="border-red-200 bg-red-50">
           <CardContent className="pt-6">
             <p className="text-red-600">❌ Error: No firm selected</p>
@@ -79,7 +79,7 @@ export default function FirmDetailsPage() {
   // Check if firm exists in our data
   if (!firmDataMap[firmId]) {
     return (
-      <div className="max-w-300 mx-auto px-4 py-6">
+      <div>
         <Card className="border-red-200 bg-red-50">
           <CardContent className="pt-6">
             <p className="text-red-600">❌ Error: Firm not found</p>
@@ -102,7 +102,7 @@ export default function FirmDetailsPage() {
   if (!firm) return null
 
   return (
-    <div className="max-w-300 mx-auto px-4 py-6 space-y-6">
+    <div className="space-y-6">
       {/* Header Section */}
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold">{firm.name}</h1>

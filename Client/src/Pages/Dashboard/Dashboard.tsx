@@ -1,59 +1,107 @@
-import { AppSidebar } from "../../components/app-sidebar"
+import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { ChartAreaInteractive } from "../../components/chart-area-interactive"
-import { DataTable } from "../../components/data-table"
+import { VendorTable } from "../../components/vendor-table"
 import { SectionCards } from "../../components/section-cards"
-import { SiteHeader } from "../../components/site-header"
-import { TopFirms } from "../../components/top-firms"
 import { TopVendors } from "../../components/top-vendors"
+import { Button } from "../../components/ui/button"
+import { useFirm } from "../../context/FirmContext"
+import { apiGet } from "../../lib/api"
+import { toast } from "sonner"
 
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "../../components/ui/sidebar"
-
-import data from "../../app/dashboard/data.json"
+type Vendor = {
+  id: string
+  name: string
+  firm: string
+  score: number
+  points: number
+}
 
 export default function Page() {
-  return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
+  const navigate = useNavigate()
+  const { activeFirm, firms } = useFirm()
+  const [vendors, setVendors] = useState<Vendor[]>([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    async function fetchVendors() {
+      if (!activeFirm) {
+        setVendors([])
+        return
       }
-    >
-      <AppSidebar variant="inset" />
+      setLoading(true)
+      try {
+        const res = await apiGet(`/firm/${activeFirm.id}/get-all-vendors`)
+        const data = await res.json()
+        if (res.ok && data.vendors) {
+          const mapped = data.vendors.map((v: any) => ({
+            id: v._id,
+            name: v.vendorName,
+            firm: activeFirm.name,
+            score: v.healthScore || 0,
+            points: v.points || 0
+          }))
+          setVendors(mapped)
+        } else {
+          setVendors([])
+        }
+      } catch (err) {
+        console.error(err)
+        toast.error("Failed to load vendors")
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchVendors()
+  }, [activeFirm])
 
-      <SidebarInset>
-        <SiteHeader />
+  // compute stats
+  const totalFirms = firms.length
+  const totalVendors = vendors.length
+  const avgHealth = totalVendors > 0 
+    ? Math.round(vendors.reduce((acc, v) => acc + v.score, 0) / totalVendors) 
+    : 0
 
-        {/* MAIN DASHBOARD CONTENT */}
-        <main className="flex flex-1 justify-center">
-          <div className="w-full max-w-350 px-4 py-6 space-y-8 lg:px-6">
+  return (
+    <>
+      {/* KPI CARDS */}
+      <SectionCards 
+        totalFirms={totalFirms} 
+        totalVendors={totalVendors} 
+        avgHealth={avgHealth} 
+      />
 
-            {/* KPI CARDS */}
-            <SectionCards />
+      {/* CHART */}
+      <div className="rounded-xl border bg-background p-4 lg:p-6 shadow-sm">
+        <ChartAreaInteractive />
+      </div>
 
-            {/* CHART */}
-            <div className="rounded-xl border bg-background p-4 lg:p-6">
-              <ChartAreaInteractive />
-            </div>
+      {/* TOP LISTS */}
+      <div className="grid grid-cols-1 gap-6">
+        <TopVendors vendors={vendors} />
+      </div>
 
-            {/* TOP LISTS */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <TopFirms />
-              <TopVendors />
-            </div>
-
-            {/* TABLE */}
-            <div className="rounded-xl border bg-background p-4 lg:p-6">
-              <DataTable data={data} />
-            </div>
-
+      {/* TABLE */}
+      <div className="rounded-xl border bg-background p-4 lg:p-6 shadow-sm">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold">
+              {activeFirm ? `${activeFirm.name} Vendors` : "All Vendors"}
+            </h3>
+            <p className="text-sm text-muted-foreground">View and manage vendors for the selected firm.</p>
           </div>
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
+          {activeFirm && (
+            <Button onClick={() => navigate(`/firm/${activeFirm.id}/add`)}>
+              Add Vendor
+            </Button>
+          )}
+        </div>
+        {loading ? (
+          <div className="flex justify-center p-8 text-muted-foreground">Loading vendors...</div>
+        ) : (
+          <VendorTable vendors={vendors} />
+        )}
+      </div>
+    </>
   )
 }

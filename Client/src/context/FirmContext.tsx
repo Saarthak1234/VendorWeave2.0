@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react"
+import { apiGet } from "@/lib/api"
 
 type Firm = {
   id: string
@@ -7,57 +8,92 @@ type Firm = {
 
 type FirmContextType = {
   activeFirm: Firm | null
-  setActiveFirm: (firm: Firm) => void
+  setActiveFirm: (firm: Firm | null) => void
   firms: Firm[]
+  loading: boolean
+  refreshFirms: () => Promise<void>
 }
 
 const FirmContext = createContext<FirmContextType | undefined>(undefined)
 
 export function FirmProvider({ children }: { children: React.ReactNode }) {
   const [activeFirm, setActiveFirmState] = useState<Firm | null>(null)
+  const [firms, setFirms] = useState<Firm[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Mock firms - replace with API call later
-  const firms: Firm[] = [
-    { id: "f1", name: "Alpha Corp" },
-    { id: "f2", name: "Nimbus Ltd" },
-    { id: "f3", name: "Orion Group" },
-    { id: "f4", name: "Vertex Inc" },
-  ]
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const storedFirm = localStorage.getItem("activeFirm")
-    if (storedFirm) {
-      try {
-        setActiveFirmState(JSON.parse(storedFirm))
-      } catch (error) {
-        console.error("Failed to parse stored firm:", error)
-        // Set default firm if stored data is invalid
-        if (firms.length > 0) {
-          setActiveFirmState(firms[0])
-        }
-      }
-    } else {
-      // Set first firm as default if none stored
-      if (firms.length > 0) {
-        setActiveFirmState(firms[0])
-      }
+  const refreshFirms = async () => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+      setFirms([])
+      setActiveFirmState(null)
+      setLoading(false)
+      return
     }
-    setLoading(false)
-  }, [])
 
-  const setActiveFirm = (firm: Firm) => {
-    setActiveFirmState(firm)
-    localStorage.setItem("activeFirm", JSON.stringify(firm))
+    try {
+      const response = await apiGet("/firm/get-firms")
+      const data = await response.json()
+
+      if (response.ok && data.firms) {
+        const mappedFirms = data.firms.map((f: any) => ({
+          id: f._id,
+          name: f.firmName,
+        }))
+        setFirms(mappedFirms)
+
+        // Check if there is an active firm stored
+        const storedFirm = localStorage.getItem("activeFirm")
+        if (storedFirm) {
+          try {
+            const parsed = JSON.parse(storedFirm)
+            // Verify if stored firm still exists in fetched firms
+            const exists = mappedFirms.some((f: Firm) => f.id === parsed.id)
+            if (exists) {
+              setActiveFirmState(parsed)
+            } else {
+              // Select first as fallback
+              const fallback = mappedFirms[0] || null
+              setActiveFirm(fallback)
+            }
+          } catch (e) {
+            const fallback = mappedFirms[0] || null
+            setActiveFirm(fallback)
+          }
+        } else {
+          // Select first as fallback
+          const fallback = mappedFirms[0] || null
+          setActiveFirm(fallback)
+        }
+      } else {
+        // e.g. 400 "No firms registered for this admin"
+        setFirms([])
+        setActiveFirm(null)
+      }
+    } catch (error) {
+      console.error("Failed to load firms in FirmProvider:", error)
+      setFirms([])
+      setActiveFirm(null)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  if (loading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>
+  // Load from backend on mount (or token change)
+  useEffect(() => {
+    refreshFirms()
+  }, [])
+
+  const setActiveFirm = (firm: Firm | null) => {
+    setActiveFirmState(firm)
+    if (firm) {
+      localStorage.setItem("activeFirm", JSON.stringify(firm))
+    } else {
+      localStorage.removeItem("activeFirm")
+    }
   }
 
   return (
-    <FirmContext.Provider value={{ activeFirm, setActiveFirm, firms }}>
+    <FirmContext.Provider value={{ activeFirm, setActiveFirm, firms, loading, refreshFirms }}>
       {children}
     </FirmContext.Provider>
   )
@@ -70,3 +106,4 @@ export function useFirm() {
   }
   return context
 }
+

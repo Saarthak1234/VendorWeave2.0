@@ -143,7 +143,7 @@ export default function VendorDetailsPage() {
   // Validate vendor ID
   if (!vendorId) {
     return (
-      <div className="max-w-300 mx-auto px-4 py-6">
+      <div>
         <Card className="border-red-200 bg-red-50">
           <CardContent className="pt-6">
             <p className="text-red-600">❌ Error: No vendor selected</p>
@@ -165,7 +165,7 @@ export default function VendorDetailsPage() {
   // Check if vendor exists in our data
   if (!vendorDataMap[vendorId]) {
     return (
-      <div className="max-w-300 mx-auto px-4 py-6">
+      <div>
         <Card className="border-red-200 bg-red-50">
           <CardContent className="pt-6">
             <p className="text-red-600">❌ Error: Vendor not found</p>
@@ -186,7 +186,7 @@ export default function VendorDetailsPage() {
   }
 
   return (
-    <div className="max-w-300 mx-auto px-4 py-6 space-y-6">
+    <div className="space-y-6">
       {/* Header Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">

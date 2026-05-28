@@ -119,7 +119,7 @@ export default function EditFirmPage() {
 
   if (!firmId || !activeFirm) {
     return (
-      <div className="max-w-xl mx-auto px-4 py-6">
+      <div>
         <p className="text-red-600">Invalid firm selected</p>
       </div>
     )
@@ -127,7 +127,7 @@ export default function EditFirmPage() {
 
   if (loading) {
     return (
-      <div className="max-w-xl mx-auto px-4 py-6 space-y-6">
+      <div className="space-y-6">
         <div className="space-y-2">
           <h1 className="text-2xl font-semibold">Edit Firm</h1>
           <p className="text-muted-foreground">Loading firm details...</p>
@@ -137,7 +137,7 @@ export default function EditFirmPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-6 space-y-6">
+    <div className="space-y-6">
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold">Edit Firm</h1>
         <p className="text-muted-foreground">
